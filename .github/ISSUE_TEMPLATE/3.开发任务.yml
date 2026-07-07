@@ -1,0 +1,29 @@
+name: "开发任务"
+description: 跟踪已确定的开发工作
+title: "[Task] "
+labels: []
+projects: ["FsLightning/3"]
+assignees: []
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 任务描述
+      placeholder: 需要完成什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      placeholder: 完成后以什么标准判断通过？
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 备注
+      placeholder: 关联需求、设计约束、实现建议或风险

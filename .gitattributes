@@ -1,0 +1,4 @@
+* export-ignore
+README.md -export-ignore
+SOURCE-ARCHIVE-NOTICE.md -export-ignore
+.gitattributes export-ignore

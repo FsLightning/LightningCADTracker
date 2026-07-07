@@ -1,0 +1,29 @@
+name: "需求评审"
+description: 提出新功能或改进建议
+title: "[需求] "
+labels: ["enhancement"]
+projects: ["FsLightning/3"]
+assignees: []
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 需求描述
+      placeholder: 需要什么功能或改进？解决什么问题？
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+      placeholder: 希望如何使用？可附截图、录屏或参考链接
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 背景信息
+      placeholder: 使用场景、客户反馈、相关版本或其他补充信息

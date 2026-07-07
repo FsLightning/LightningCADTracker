@@ -1,0 +1,41 @@
+# LightningCADTracker
+
+`LightningCADTracker` 是 LightningCAD 的需求、缺陷、开发任务追踪与安装包发布中心，面向测试、需求、实施和开发协作使用。
+
+## 仓库定位
+
+- 需求、缺陷、开发任务和使用支持统一在本仓库提交 Issue。
+- 安装包统一从本仓库的 [Releases](https://github.com/FsLightning/LightningCADTracker/releases) 下载。
+- 本仓库不存放 `LightningCAD` 源代码；源码仓库是 [`FsLightning/LightningCAD`](https://github.com/FsLightning/LightningCAD)，仅面向开发人员。
+
+## 下载安装包
+
+请进入 [Releases](https://github.com/FsLightning/LightningCADTracker/releases)，下载对应版本 Assets 中的 MSI：
+
+```text
+LightningCAD_Installer_vX.Y.Z.msi
+```
+
+Release 页面中 GitHub 自动显示的 `Source code (zip/tar.gz)` 是本 Tracker 仓库归档，不是 `LightningCAD` 源代码，也不是安装包。安装或测试时请下载 MSI。
+
+## 提交反馈
+
+请从 [New issue](https://github.com/FsLightning/LightningCADTracker/issues/new/choose) 选择合适模板：
+
+- 需求评审：新功能、体验改进、业务流程建议
+- Bug 报告：可复现缺陷、异常、安装或运行问题
+- 开发任务：已经明确需要跟踪的开发工作
+- 提问 / 支持：使用问题、验证疑问或需要协助的信息
+
+提交 Bug 时建议附上版本号、CAD 平台、复现步骤、截图或录屏，以及必要的日志。
+
+## 发布同步说明
+
+`LightningCAD` 源码仓库的 release workflow 会继续创建原始 GitHub Release。发布成功后，旁路 workflow 会把安装包同步到本仓库同 tag Release。
+
+同步资产范围：
+
+- 必需：`LightningCAD_Installer_${tag}.msi`
+- 可选：`changelog.html`
+
+本仓库 Release 长期保留，不跟随源码仓库的构建记录或清理策略发布源代码。

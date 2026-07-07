@@ -1,0 +1,27 @@
+name: "提问 / 支持"
+description: 使用问题、验证疑问或需要协助的信息
+title: "[Question] "
+labels: ["question"]
+projects: ["FsLightning/3"]
+assignees: []
+
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: 问题描述
+      placeholder: 遇到什么问题？想达到什么目的？
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 已尝试的方法
+      placeholder: 可选，写一下已经试过什么
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 环境或补充信息
+      placeholder: LightningCAD 版本、CAD 平台、操作系统或其他相关信息
