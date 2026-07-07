@@ -1,7 +1,7 @@
 name: "提问 / 支持"
 description: 使用问题、验证疑问或需要协助的信息
 title: "[Question] "
-labels: ["question"]
+labels: ["Question", "Inbox"]
 projects: ["FsLightning/3"]
 assignees: []
 

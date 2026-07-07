@@ -1,7 +1,7 @@
 name: "Bug 报告"
 description: 提交可复现缺陷、异常、安装或运行问题
 title: "[Bug] "
-labels: ["bug"]
+labels: ["Bug", "Inbox"]
 projects: ["FsLightning/3"]
 assignees: []
 

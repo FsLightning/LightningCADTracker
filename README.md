@@ -29,6 +29,48 @@ Release 页面中 GitHub 自动显示的 `Source code (zip/tar.gz)` 是本 Track
 
 提交 Bug 时建议附上版本号、CAD 平台、复现步骤、截图或录屏，以及必要的日志。
 
+## 标签说明 (Labels)
+
+### 性质 (Type)
+
+| 标签 | 用途 |
+|------|------|
+| `Bug` | 故障与缺陷 |
+| `Enhance` | 新功能需求与改进 |
+| `Question` | 提问与确认 |
+| `Draft` | 草稿/暂存 |
+
+### 功能模块 (Module)
+
+| 标签 | 用途 |
+|------|------|
+| `Panel` | 板材排版相关 |
+| `JieDian` | 节点线相关 |
+| `ShouBian` | 收边相关 |
+| `Opening` | 门窗洞口 |
+| `UI/UX` | 界面交互 |
+| `Basic` | 基础功能/通用开发 |
+| `WorkList` | 任务列表 |
+| `CI/CD` | 构建与部署 |
+| `Product` | 生产环境相关 |
+| `CustomEntity` | 自定义实体 |
+
+### 流程状态
+
+| 标签 | 用途 |
+|------|------|
+| `Inbox` | 待处理的收件箱/需求池 |
+
+### 其他
+
+| 标签 | 用途 |
+|------|------|
+| `Document` | 文档改进 |
+| `HelpWanted` | 寻求帮助 |
+| `duplicate` | 重复 Issue |
+| `invalid` | 信息不完整、无法复现或不适用 |
+| `wontfix` | 明确不处理 |
+
 ## 发布同步说明
 
 `LightningCAD` 源码仓库的 release workflow 会继续创建原始 GitHub Release。发布成功后，旁路 workflow 会把安装包同步到本仓库同 tag Release。

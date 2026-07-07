@@ -1,7 +1,7 @@
 name: "开发任务"
 description: 跟踪已确定的开发工作
 title: "[Task] "
-labels: []
+labels: ["Inbox"]
 projects: ["FsLightning/3"]
 assignees: []
 
