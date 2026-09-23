@@ -1,7 +1,7 @@
 # Cloudflare Workers + GitHub Releases 优先下载通道方案
 
 > 状态：Worker 流式中转与官网双入口均已上线，Cloudflare 为优先通道、阿里云 OSS 为备用；当前不购买 Workers Paid
-> 更新日期：2026-09-23
+> 更新日期：2026-09-24
 
 2026-09-24 线上验证已确认：Worker version `74cbad32-fedd-425c-8e8a-1cf04cf93f5d` 已部署；域名健康检查为 `200`，v0.1.5 的 Cloudflare 与 OSS 独立完整下载均为 `73,008,333` bytes，SHA-256 与本页基线及 Tracker Release digest 一致，Range 返回 `206`、越界 Range 返回 `416`，响应为 `no-store`。官网生产页已显示 Cloudflare 优先下载和阿里云备用下载两个入口。首次 PoC 曾验证 Cloudflare 缓存能力；最终方案因“不需要 CDN 加速”而关闭大文件缓存，改为把 Range 转发给 GitHub 并流式回传。
 
