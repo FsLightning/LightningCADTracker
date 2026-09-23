@@ -163,7 +163,7 @@ Cloudflare 中国网络的境内节点产品仍要求 Enterprise 和独立订阅
 
 在发布顺序尚未调整前，也可以让固定的 Cloudflare 版本路径在 Tracker 资产未就绪时受控回源 OSS，但不能把一个尚未可用的 URL直接发布给用户。
 
-此前的 [CAD PR #294](https://github.com/FsLightning/LightningCAD/pull/294) 和 [Landing PR #52](https://github.com/FsLightning/LightningLanding/pull/52) 记录了可重复的网站同步操作；它们是本次通道升级的发布背景。2026-09-23 已通过 Wrangler 部署 `lightningcad-download.278848.xyz`，并确认健康检查和 v0.1.4 元数据请求可用；官网代码与后续发布同步仍需合并后才会正式导流。
+此前的 [CAD PR #294](https://github.com/FsLightning/LightningCAD/pull/294) 和 [Landing PR #52](https://github.com/FsLightning/LightningLanding/pull/52) 记录了可重复的网站同步操作；它们是本次通道升级的发布背景。2026-09-23 已通过 Wrangler 部署 `lightningcad-download.278848.xyz`，并确认健康检查和 v0.1.4 元数据请求可用；官网双入口及后续同步调整已提交到 [Landing Draft PR #53](https://github.com/FsLightning/LightningLanding/pull/53)，该 PR 合并后才会正式导流。
 
 ## 8. 官网展示与失败行为
 
@@ -241,6 +241,7 @@ Cloudflare 中国网络的境内节点产品仍要求 Enterprise 和独立订阅
 - [LightningCADTracker v0.1.4](https://github.com/FsLightning/LightningCADTracker/releases/tag/v0.1.4)
 - [CAD PR #294](https://github.com/FsLightning/LightningCAD/pull/294)
 - [Landing PR #52](https://github.com/FsLightning/LightningLanding/pull/52)
+- [Landing Draft PR #53：Cloudflare GitHub Release 中转通道](https://github.com/FsLightning/LightningLanding/pull/53)
 
 ### Cloudflare 官方资料
 
