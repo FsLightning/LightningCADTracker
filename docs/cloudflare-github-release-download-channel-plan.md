@@ -1,9 +1,9 @@
 # Cloudflare Workers + GitHub Releases 优先下载通道方案
 
-> 状态：Worker 流式中转已实现并部署验证；官网双入口代码待 Landing 变更合并，当前不购买 Workers Paid
+> 状态：Worker 流式中转与官网双入口均已上线，Cloudflare 为优先通道、阿里云 OSS 为备用；当前不购买 Workers Paid
 > 更新日期：2026-09-23
 
-2026-09-23 线上验证已确认：Worker version `74cbad32-fedd-425c-8e8a-1cf04cf93f5d` 已部署；新域名健康检查为 `200`，v0.1.4 的 Cloudflare 与 OSS 独立完整下载均为 `72,828,109` bytes，SHA-256 与本页基线及 Tracker Release digest 一致，Range 返回 `206`，响应为 `no-store`。首次 PoC 曾验证 Cloudflare 缓存能力；最终方案因“不需要 CDN 加速”而关闭大文件缓存，改为把 Range 转发给 GitHub 并流式回传。
+2026-09-24 线上验证已确认：Worker version `74cbad32-fedd-425c-8e8a-1cf04cf93f5d` 已部署；域名健康检查为 `200`，v0.1.5 的 Cloudflare 与 OSS 独立完整下载均为 `73,008,333` bytes，SHA-256 与本页基线及 Tracker Release digest 一致，Range 返回 `206`、越界 Range 返回 `416`，响应为 `no-store`。官网生产页已显示 Cloudflare 优先下载和阿里云备用下载两个入口。首次 PoC 曾验证 Cloudflare 缓存能力；最终方案因“不需要 CDN 加速”而关闭大文件缓存，改为把 Range 转发给 GitHub 并流式回传。
 
 ## 1. 结论
 
@@ -30,17 +30,17 @@ Tracker README 已明确其职责：
 - `LightningCADTracker`：Issue 协作及面向用户的安装包 Release。
 - 当前发布链路为 `LightningCAD Release -> 同步安装包 -> LightningCADTracker Releases`。
 
-截至 2026-09-23，Tracker 已改为 **Public**。公开 Release 资产可以匿名访问，因此 Cloudflare Worker 不需要保存 GitHub Token。实测 `v0.1.4` 的公开 MSI 地址先返回 GitHub `302`，随后得到安装包响应 `200`，并支持字节范围请求。
+截至 2026-09-24，Tracker 保持 **Public**。公开 Release 资产可以匿名访问，因此 Cloudflare Worker 不需要保存 GitHub Token。实测 `v0.1.5` 的公开 MSI 地址先返回 GitHub `302`，随后得到安装包响应 `200`，并支持字节范围请求。
 
 ### 2.2 当前安装包基线
 
-以 [`v0.1.4`](https://github.com/FsLightning/LightningCADTracker/releases/tag/v0.1.4) 为基线：
+以 [`v0.1.5`](https://github.com/FsLightning/LightningCADTracker/releases/tag/v0.1.5) 为当前基线：
 
 | 项目 | 值 |
 | --- | --- |
-| 文件名 | `LightningCAD_Installer_v0.1.4.msi` |
-| 大小 | `72,828,109` bytes（约 69.5 MiB / 72.8 MB） |
-| SHA-256 | `c37eebc0bd2e798df1a46324fef208f697221f4c97db7f0f626429f001ebbded` |
+| 文件名 | `LightningCAD_Installer_v0.1.5.msi` |
+| 大小 | `73,008,333` bytes（约 69.6 MiB / 73.0 MB） |
+| SHA-256 | `e7835fdff511231854b0dbbdc205244ce3f029d2c317fef18c7bd3399dcb358a` |
 | Tracker 状态 | `uploaded` |
 | 匿名访问 | 可用，`302 -> 200` |
 | Range 基础能力 | GitHub 最终响应包含 `Accept-Ranges: bytes` |
@@ -99,7 +99,7 @@ Tracker 已公开，因此 Worker 运行时不需要 GitHub Token。实施期间
 推荐使用不可变版本路径，例如：
 
 ```text
-https://lightningcad-download.278848.xyz/releases/v0.1.4/LightningCAD_Installer_v0.1.4.msi
+https://lightningcad-download.278848.xyz/releases/v0.1.5/LightningCAD_Installer_v0.1.5.msi
 ```
 
 当前不提供 `/latest`，官网和发布同步始终写入不可变版本路径，避免同一 URL 对应不同二进制文件。
@@ -163,7 +163,7 @@ Cloudflare 中国网络的境内节点产品仍要求 Enterprise 和独立订阅
 
 在发布顺序尚未调整前，也可以让固定的 Cloudflare 版本路径在 Tracker 资产未就绪时受控回源 OSS，但不能把一个尚未可用的 URL直接发布给用户。
 
-此前的 [CAD PR #294](https://github.com/FsLightning/LightningCAD/pull/294) 和 [Landing PR #52](https://github.com/FsLightning/LightningLanding/pull/52) 记录了可重复的网站同步操作；它们是本次通道升级的发布背景。2026-09-23 已通过 Wrangler 部署 `lightningcad-download.278848.xyz`，并确认健康检查和 v0.1.4 元数据请求可用；官网双入口及后续同步调整已提交到 [Landing Draft PR #53](https://github.com/FsLightning/LightningLanding/pull/53)，该 PR 合并后才会正式导流。
+此前的 [CAD PR #294](https://github.com/FsLightning/LightningCAD/pull/294) 和 [Landing PR #52](https://github.com/FsLightning/LightningLanding/pull/52) 记录了可重复的网站同步操作；它们是本次通道升级的发布背景。2026-09-23 已通过 Wrangler 部署 `lightningcad-download.278848.xyz`；[Landing PR #53](https://github.com/FsLightning/LightningLanding/pull/53) 于 2026-09-24 合并到 `main` 并完成 EdgeOne 生产发布，官网已正式导流到 v0.1.5 双入口。
 
 ## 8. 官网展示与失败行为
 
@@ -238,10 +238,10 @@ Cloudflare 中国网络的境内节点产品仍要求 Enterprise 和独立订阅
 
 - [LightningCADTracker README](https://github.com/FsLightning/LightningCADTracker#readme)
 - [LightningCADTracker Releases](https://github.com/FsLightning/LightningCADTracker/releases)
-- [LightningCADTracker v0.1.4](https://github.com/FsLightning/LightningCADTracker/releases/tag/v0.1.4)
+- [LightningCADTracker v0.1.5](https://github.com/FsLightning/LightningCADTracker/releases/tag/v0.1.5)
 - [CAD PR #294](https://github.com/FsLightning/LightningCAD/pull/294)
 - [Landing PR #52](https://github.com/FsLightning/LightningLanding/pull/52)
-- [Landing Draft PR #53：Cloudflare GitHub Release 中转通道](https://github.com/FsLightning/LightningLanding/pull/53)
+- [Landing PR #53：Cloudflare GitHub Release 中转通道](https://github.com/FsLightning/LightningLanding/pull/53)
 
 ### Cloudflare 官方资料
 
