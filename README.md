@@ -30,6 +30,8 @@ LightningCAD Release -> 同步安装包 -> LightningCADTracker Releases
 
 请进入 [Releases](https://github.com/FsLightning/LightningCADTracker/releases)，下载对应版本 Assets 中的 MSI：
 
+> 下载通道升级：Cloudflare Worker 技术入口已部署，官网将以其流式反向代理本仓库公开 Release 作为优先通道，并保留阿里云 OSS 直链作为备用。该入口不是 `302` 到 GitHub，也不启用大文件缓存加速；正式导流状态与免费方案闸门见 [Cloudflare Workers + GitHub Releases 优先下载通道方案](docs/cloudflare-github-release-download-channel-plan.md)。
+
 ```text
 LightningCAD_Installer_vX.Y.Z.msi
 ```
