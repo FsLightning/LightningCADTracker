@@ -1,5 +1,5 @@
 <#====================================================================
-  FsHolu Issue Migration Tool
+  LightningCAD Issue Migration Tool
   ====================================================================
   DESCRIPTION:
     Batch-migrate all issues from one GitHub repo to another.
@@ -60,7 +60,7 @@ $mapPath = Join-Path $scriptDir "_migration_map.csv"
 # ---- Step 1: Export all issues from source ----
 Write-Host "=== Step 1: Exporting issues from $SourceRepo ===" -ForegroundColor Cyan
 $jsonRaw = gh issue list -R $SourceRepo --state all --limit 1000 `
-    --json number,title,state,labels,milestone,assignees,body,createdAt,updatedAt,comments 2>&1
+    --json number,title,state,labels,milestone,author,assignees,body,createdAt,updatedAt,comments 2>&1
 $jsonRaw | Set-Content $exportPath -Encoding UTF8
 
 if ($LASTEXITCODE -ne 0) {
@@ -74,9 +74,11 @@ Write-Host "Exported $total issues ($($issues | Group-Object state | ForEach-Obj
 
 # ---- Step 2: Load milestones from target ----
 Write-Host "`n=== Step 2: Loading milestones from $TargetRepo ===" -ForegroundColor Cyan
-$milestones = gh api repos/$TargetRepo/milestones --jq '.[] | {title, number}' | ConvertFrom-Json
+$milestonePages = gh api repos/$TargetRepo/milestones --method GET -f state=all --paginate --slurp | ConvertFrom-Json
 $milestoneMap = @{}
-$milestones | ForEach-Object { $milestoneMap[$_.title] = $_.number }
+foreach ($page in $milestonePages) {
+    foreach ($milestone in $page) { $milestoneMap[$milestone.title] = $milestone.number }
+}
 
 # ---- Helper: Format issue body with migration footer ----
 function Format-Body($issue) {
@@ -84,10 +86,10 @@ function Format-Body($issue) {
     if ([string]::IsNullOrEmpty($body)) { $body = "*(No description provided)*" }
 
     # Build author string
-    $author = if ($issue.assignees.Count -gt 0) {
-        "@" + ($issue.assignees.login -join ", @")
+    $author = if ($issue.author.login) {
+        "@" + $issue.author.login
     } else {
-        "*(Unassigned)*"
+        "*(Unknown)*"
     }
 
     $oldRef = "$SourceRepo#$($issue.number)"
@@ -124,6 +126,7 @@ $migrationMap = @{}
 
 foreach ($issue in $issues) {
     $oldNum = $issue.number
+    $oldRef = "$SourceRepo#$oldNum"
     $title = $issue.title
     $body = Format-Body $issue
     $labels = if ($issue.labels -and $issue.labels.Count -gt 0) { $issue.labels.name -join "," } else { $null }
@@ -143,12 +146,16 @@ foreach ($issue in $issues) {
     }
 
     $newNum = ($newUrl -split "/")[-1]
-    $migrationMap[$oldNum] = $newNum
+    $migrationMap[$oldNum] = [PSCustomObject]@{
+        SourceNumber = $oldNum
+        TargetNumber = $newNum
+        State = $state
+    }
     Write-Host "  -> #${newNum}" -ForegroundColor Green
 
     # Set milestone via API
     if ($milestoneNum) {
-        gh api repos/$TargetRepo/issues/$newNum -X PATCH -f milestone=$milestoneNum --silent 2>&1 | Out-Null
+        gh api repos/$TargetRepo/issues/$newNum -X PATCH -F milestone=$milestoneNum --silent 2>&1 | Out-Null
     }
 
     # Close if source was closed
@@ -167,9 +174,7 @@ Write-Host ("=" * 55) -ForegroundColor Cyan
 Write-Host "Migration complete! $createdCount / $total issues created." -ForegroundColor Green
 
 # ---- Step 4: Save mapping ----
-$migrationMap.GetEnumerator() | ForEach-Object {
-    [PSCustomObject]@{ SourceNumber = $_.Key; TargetNumber = $_.Value }
-} | Export-Csv $mapPath -NoTypeInformation
+$migrationMap.Values | Sort-Object SourceNumber | Export-Csv $mapPath -NoTypeInformation
 Write-Host "Mapping saved to: $mapPath" -ForegroundColor Cyan
 
 # ---- Step 5: Generate close-source script ----
@@ -179,18 +184,30 @@ $closeScript = @"
 # Run this to add a migration link comment and close all open source issues
 
 `$sourceRepo = "$SourceRepo"
-`$map = Import-Csv "$mapPath"
+`$targetRepo = "$TargetRepo"
+`$repositoryRoot = Split-Path -Parent `$PSScriptRoot
+`$map = Import-Csv (Join-Path `$repositoryRoot "_migration_map.csv")
+`$sourceStates = @{}
+`$issuePath = Join-Path `$repositoryRoot "$ExportFile"
+if (Test-Path -LiteralPath `$issuePath) {
+    Get-Content -LiteralPath `$issuePath -Raw | ConvertFrom-Json | ForEach-Object {
+        `$sourceStates[[int]`$_.number] = `$_.state
+    }
+}
 `$closedCount = 0
 
 foreach (`$row in `$map) {
-    `$oldNum = `$row.SourceNumber
-    `$newNum = `$row.TargetNumber
-    `$comment = "This issue has been migrated to $TargetRepo#$newNum. Please continue discussion there."
+    `$oldNum = if (`$row.SourceNumber) { `$row.SourceNumber } else { `$row.Source }
+    `$newNum = if (`$row.TargetNumber) { `$row.TargetNumber } else { `$row.Target }
+    `$state = if (`$row.State) { `$row.State } else { `$sourceStates[[int]`$oldNum] }
+    `$comment = "This issue has been migrated to `$targetRepo#`$newNum. Please continue discussion there."
 
-    Write-Host "[#$oldNum] Adding comment and closing..."
+    Write-Host "[#`$oldNum] Adding comment and closing..."
     gh issue comment `$oldNum -R `$sourceRepo --body "`$comment" 2>&1 | Out-Null
-    if (`$row.State -eq "OPEN") {
-        gh issue close `$oldNum -R `$sourceRepo --comment "Migrated to $TargetRepo" 2>&1 | Out-Null
+    if (`$LASTEXITCODE -ne 0) { continue }
+    if (`$state -eq "OPEN") {
+        gh issue close `$oldNum -R `$sourceRepo --comment "Migrated to `$targetRepo" 2>&1 | Out-Null
+        if (`$LASTEXITCODE -ne 0) { continue }
     }
     `$closedCount++
     Start-Sleep -Milliseconds 200
