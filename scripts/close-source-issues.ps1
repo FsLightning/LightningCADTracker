@@ -3,18 +3,30 @@
 # Run this to add a migration link comment and close all open source issues
 
 $sourceRepo = "FsLightning/LightningCAD"
-$map = Import-Csv "D:\MakeX\Envelop\Lightning\LightningCADTracker\_migration_map.csv"
+$targetRepo = "FsLightning/LightningCADTracker"
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$map = Import-Csv (Join-Path $repositoryRoot "_migration_map.csv")
+$sourceStates = @{}
+$issuePath = Join-Path $repositoryRoot "_migration_issues.json"
+if (Test-Path -LiteralPath $issuePath) {
+    Get-Content -LiteralPath $issuePath -Raw | ConvertFrom-Json | ForEach-Object {
+        $sourceStates[[int]$_.number] = $_.state
+    }
+}
 $closedCount = 0
 
 foreach ($row in $map) {
-    $oldNum = $row.SourceNumber
-    $newNum = $row.TargetNumber
-    $comment = "This issue has been migrated to FsLightning/LightningCADTracker#. Please continue discussion there."
+    $oldNum = if ($row.SourceNumber) { $row.SourceNumber } else { $row.Source }
+    $newNum = if ($row.TargetNumber) { $row.TargetNumber } else { $row.Target }
+    $state = if ($row.State) { $row.State } else { $sourceStates[[int]$oldNum] }
+    $comment = "This issue has been migrated to $targetRepo#$newNum. Please continue discussion there."
 
-    Write-Host "[#] Adding comment and closing..."
+    Write-Host "[#$oldNum] Adding comment and closing..."
     gh issue comment $oldNum -R $sourceRepo --body "$comment" 2>&1 | Out-Null
-    if ($row.State -eq "OPEN") {
-        gh issue close $oldNum -R $sourceRepo --comment "Migrated to FsLightning/LightningCADTracker" 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { continue }
+    if ($state -eq "OPEN") {
+        gh issue close $oldNum -R $sourceRepo --comment "Migrated to $targetRepo" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { continue }
     }
     $closedCount++
     Start-Sleep -Milliseconds 200
